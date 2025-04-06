@@ -3,22 +3,22 @@ from pydantic import BaseModel
 from pymongo import MongoClient
 from requests.auth import _basic_auth_str
 
-from assistant_graph import AcademicAssistant
+from assistant_graph import SupplierAssistant
 from config import MAX_LEN_USER_PROMPT
 from protection import ExceedingProtector, ProtectionStatus, ProtectorsAccumulator
 from protection.base import BaseHandler
-from runnables import createAcademicRunnablesOllama
+from runnables import createSupplierRunnablesVLLM
 
 
-class AcademicOptions(BaseModel):
+class SupplierOptions(BaseModel):
     llm_name: str
     psycopg_checkpointer: str
 
 
-class AcademicHandler(BaseHandler):
+class SupplierHandler(BaseHandler):
 
-    def __init__(self, options: AcademicOptions) -> None:
-        self._academic_runnables = createAcademicRunnablesOllama(
+    def __init__(self, options: SupplierOptions) -> None:
+        self._Supplier_runnables = createSupplierRunnablesVLLM(
             llm_name=options.llm_name,
             headers={"Authorization": _basic_auth_str("admin", "password")},
         )
@@ -26,8 +26,8 @@ class AcademicHandler(BaseHandler):
         self._protector = ProtectorsAccumulator(protectors=[ExceedingProtector(max_len=MAX_LEN_USER_PROMPT)])
         self.mongodb_client = MongoClient(self._checkpointer_db_uri)
         self.checkpointer = MongoDBSaver(self.mongodb_client)
-        self.assistant = AcademicAssistant(
-            academic_runnables=self._academic_runnables,
+        self.assistant = SupplierAssistant(
+            Supplier_runnables=self._Supplier_runnables,
             checkpointer=self.checkpointer,
         )
 
@@ -40,5 +40,5 @@ class AcademicHandler(BaseHandler):
         output = self.assistant.graph.invoke({"query": prompt, "user_id": chat_id}, config=config)
         answer = output["final_output"]
         value = output["final_output"]
-        image_data = output["image_data"]
-        return answer, value, image_data
+        # image_data = output["image_data"] # TODO: FIX IMAGES
+        return answer, value
