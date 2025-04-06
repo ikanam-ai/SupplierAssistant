@@ -6,6 +6,8 @@ from langchain_core.runnables import Runnable
 from pydantic import BaseModel, Field
 from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 
+from config import HOST, PORT, PROGRAM_EXTRACTION_CHAIN_NODE_EMBEDDING_MODEL_NAME, E5_COLLECTIONS
+
 class RAGInput(TypedDict):
     query: str
     messages: List[BaseMessage]
@@ -17,28 +19,20 @@ class RAGOutput(BaseModel):
     image_data: list = Field(description="Информация о картинках")
 
 def createRAGChain(
-    host: str = "83.143.66.65", 
-    port: int = 27370,
+    host: str = HOST, 
+    port: int = PORT,
     device: str = "cuda:0"
 ) -> Runnable[RAGInput, RAGOutput]:
     """
     Создаёт цепочку для поиска релевантных документов в Milvus с использованием E5 эмбеддингов.
     """
     # Инициализация модели для эмбеддингов
-    model_name = "intfloat/multilingual-e5-large"
+    model_name = PROGRAM_EXTRACTION_CHAIN_NODE_EMBEDDING_MODEL_NAME
     hf_embeddings = HuggingFaceEmbeddings(
         model_name=model_name,
         model_kwargs={'device': device}
     )
     
-    # Список коллекций с E5 эмбеддингами
-    E5_COLLECTIONS = [
-        "supplier_e5",
-        "customer_e5",
-        "electronic_aktirovanie_e5",
-        "reglament_e5"
-    ]
-
     class RAGRunnable(Runnable[RAGInput, RAGOutput]):
         def invoke(self, input_data: RAGInput) -> RAGOutput:
             user_query = input_data["query"]

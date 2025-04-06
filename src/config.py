@@ -25,11 +25,28 @@ APP_NUM_SIMILAR_QUESTIONS: int = 3
 LLM_NAME: Final[str] = "yandex/YandexGPT-5-Lite-8B-instruct"
 
 CLIENT_BASE_URL: Final[str] = "http://83.143.66.61:27363/v1"
+HOST: Final[str] = "83.143.66.65"
+PORT: Final[int] = 27370
 
 PROGRAMS_TABLE_PATH: str = "data/final_table-new_v.2.xlsx"
 MONGO_DB_PATH: str = f"mongodb://{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_HOST}:{MONGO_PORT}/"
 
 # Nodes
+
+# faq_chain.py
+# Список коллекций для поиска
+COLLECTIONS = [
+   "FAQ_tender_bm25"
+]
+
+# rag_chain.py
+# Список коллекций с E5 эмбеддингами
+E5_COLLECTIONS = [
+   "supplier_e5",
+   "customer_e5",
+   "electronic_aktirovanie_e5",
+   "reglament_e5"
+]
 
 # Answer node
 ANSWER_NODE_SYSTEM_PROMPT: str = f"""

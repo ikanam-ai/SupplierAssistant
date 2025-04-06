@@ -4,6 +4,8 @@ from langchain_core.messages import BaseMessage
 from langchain_core.runnables import Runnable
 from pydantic import BaseModel, Field
 
+from config import HOST, PORT, COLLECTIONS
+
 class RAGInput(TypedDict):
     query: str
     messages: List[BaseMessage]
@@ -14,18 +16,13 @@ class RAGOutput(BaseModel):
     collection_stats: dict = Field(description="Статистика по коллекциям", default_factory=dict)
 
 def createFAQChain(
-    host: str = "83.143.66.65", 
-    port: int = 27370,
+    host: str = HOST, 
+    port: int = PORT,
 ) -> Runnable[RAGInput, RAGOutput]:
     """
     Создаёт цепочку для поиска релевантных документов в Milvus с использованием BM25.
     Ищет по всем указанным коллекциям и возвращает топ-5 результатов из объединённых результатов.
     """
-    # Список коллекций для поиска
-    COLLECTIONS = [
-        "FAQ_tender_bm25"
-    ]
-
     class RAGRunnable(Runnable[RAGInput, RAGOutput]):
         def invoke(self, input_data: RAGInput) -> RAGOutput:
             user_query = input_data["query"]
