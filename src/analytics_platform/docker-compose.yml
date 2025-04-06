@@ -1,0 +1,26 @@
+version: '3.7'
+
+services:
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase
+    restart: always
+    ports:
+      - '27362:3000'  # Открываем наружу, чтобы Metabase был доступен по http://83.143.66.61:27362/
+    environment:
+      MB_DB_FILE: /metabase-data/metabase.db
+      # Если нужен LDAP:
+      # MB_LDAP_ENABLED: 'true'
+      # MB_LDAP_HOST: 'ldap'
+      # MB_LDAP_PORT: '389'
+      # MB_LDAP_BIND_DN: 'cn=admin,dc=example,dc=org'
+      # MB_LDAP_BIND_PASSWORD: 'adminpassword'
+      # MB_LDAP_USER_BASE: 'ou=users,dc=example,dc=org'
+      # MB_LDAP_GROUP_BASE: 'ou=groups,dc=example,dc=org'
+    volumes:
+      - metabase_data:/metabase-data
+      # Если нужны внешние плагины:
+      # - ./plugins:/plugins
+
+volumes:
+  metabase_data:
