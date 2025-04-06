@@ -1,5 +1,4 @@
 import os
-from datetime import datetime
 from typing import Final
 
 from dotenv import load_dotenv
@@ -16,25 +15,21 @@ MONGO_PORT = os.getenv("MONGO_PORT", "")
 TOKEN = os.getenv("TOKEN", "")
 MAX_LEN_USER_PROMPT: int = int(os.getenv("MAX_LEN_USER_PROMPT", ""))
 
-APP_LLM_NAME: str = "yandex/YandexGPT-5-Lite-8B-instruct"
-APP_DATA_PATH: str = "data/table_rag.xlsx"
-APP_DB_URI: str = "sqlite:///ranepa_all.db"
-APP_LLM_TEMPERATURE: float = 0
-APP_NUM_SIMILAR_QUESTIONS: int = 3
-
+APP_LLM_NAME: Final[str] = "yandex/YandexGPT-5-Lite-8B-instruct"
 LLM_NAME: Final[str] = "yandex/YandexGPT-5-Lite-8B-instruct"
+EMBEDDING_MODEL_NAME: Final[str] = "intfloat/multilingual-e5-large"
 
 CLIENT_BASE_URL: Final[str] = "http://83.143.66.61:27363/v1"
 HOST: Final[str] = "83.143.66.65"
 PORT: Final[int] = 27370
 
-PROGRAMS_TABLE_PATH: str = "data/final_table-new_v.2.xlsx"
+PROGRAMS_TABLE_PATH: str = "data/final_table-new_v.2.xlsx" # TODO: Remove after check if need telegram_api.py
 MONGO_DB_PATH: str = f"mongodb://{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_HOST}:{MONGO_PORT}/"
 
 # Nodes
 
 # faq_chain.py
-# Список коллекций для поиска
+# Список коллекций FAQ для поиска
 COLLECTIONS = [
    "FAQ_tender_bm25"
 ]
@@ -93,121 +88,3 @@ ANSWER_NODE_SYSTEM_PROMPT: str = f"""
 
     """
 ANSWER_NODE_LLM_TEMPERATURE: float = 0.7
-
-# Contextualize chain node
-CONTEXTUALIZE_CHAIN_NODE_SYSTEM_PROMPT: str = """\
-Вы — помощник, который анализирует историю чата и формирует единый запрос на основе всех частей контекста. \
-Если пользователь задаёт вопросы по частям или уточняет детали, объедините их в один логически завершённый запрос. \
-Если тема меняется, сформируйте новый запрос, соответствующий новой теме. \
-Особое внимание уделяйте названиям учебных программ: сохраняйте их в том виде, в котором их указал пользователь. \
-Переведи их в начальную ворму и можешь отдльено указать
-Не добавляйте лишних комментариев, просто переформулируйте запрос так, чтобы он был понятен без истории чата. \
-Если спросил про новую программу то ЗАБУДЬ про прошлые программы и вопрос пока пользователь не попросит обратно\
-Например был вопрос про 
-Какие есть программы для экономистов
-и какая стомость
-значит делаем какая стоимость програмы
-
-если спрашивали про стоимость прогроаммы раньше и указали новую то забываем про прошлый диалог и отвечаем на новый вопрос
-Пишите на русском языке.\
-"""
-CONTEXTUALIZE_CHAIN_NODE_LLM_TEMPERATURE: float = 0
-
-# Elastic search node
-ELASTIC_URL = "http://localhost:9200"  # FIXME: change to docker link
-INDEX_NAME = "ranepa_rag"  # FIXME: change to final name
-NLP_NAME: Final[str] = "ru_core_news_md"
-SPELLCHECKER_LANGUAGE: Final[str] = "ru"
-
-# Program extraction chain node
-PROGRAM_EXTRACTION_CHAIN_NODE_LLM_TEMPERATURE: float = 0
-PROGRAM_EXTRACTION_CHAIN_NODE_EMBEDDING_MODEL_NAME: str = "intfloat/multilingual-e5-large"
-
-# Scenario node
-SCENARIO_NODE_LLM_TEMPERATURE: float = 0
-
-# SQL gen node
-SQL_GEN_NODE_LLM_TEMPERATURE: float = 0
-SQL_GEN_NODE_DB_PATH: str = "sqlite:///data/final_table-new_v2.db"
-
-# SQL shots node
-SQL_SHOTS_NODE_NUM_SHOTS: int = 3
-SQL_SHOTS_NODE_LIMIT: int = 10
-SQL_SHOTS_NODE_DB_PATH: str = "data/sqlQA-final.csv"
-
-# App (Web)
-APP_SYSTEM_PROMPT: str = """
-ТЫ — ЭКСПЕРТ ПО SQL-ЗАПРОСАМ, СПЕЦИАЛИЗИРУЮЩИЙСЯ НА АНАЛИЗЕ ОБРАЗОВАТЕЛЬНЫХ ДАННЫХ И ОПТИМИЗИРОВАННЫХ ЗАПРОСАХ К БАЗЕ ДАННЫХ ИНСТИТУТА РАНХИГС. ТВОЯ ЗАДАЧА — ГЕНЕРИРОВАТЬ ТОЧНЫЕ, ЭФФЕКТИВНЫЕ И ОПТИМИЗИРОВАННЫЕ SQL-ЗАПРОСЫ НА ОСНОВЕ ЗАПРОСОВ ПОЛЬЗОВАТЕЛЯ.  
-
-### ИНСТРУКЦИИ ###
-
-0. Это все программы Росси́йская акаде́мия наро́дного хозя́йства и госуда́рственной слу́жбы при Президенте Росси́йской Федера́ции (РАНХиГС[1], Президентская академия[1][4]) — российское высшее учебное заведение, занимающееся подготовкой специалистов социально-экономической и гуманитарной направленности[5], а также подготовкой и переподготовкой специалистов высшего управленческого уровня[6].
-
-1. **ПОНИМАНИЕ СТРУКТУРЫ БАЗЫ ДАННЫХ**  
-   - В базе данных хранятся данные об образовательных программах, их требованиях, стоимости обучения, вступительных экзаменах и контактах.  
-   - Таблица: `ranepa`
-   - Основные столбцы:  
-         'Программа': 'Program',
-         'Кластер': 'Cluster',
-         'Направления подготовки': 'Specialization',
-         'Треки': 'Tracks',
-         'Квалификация': 'Qualification',
-         'Форма обучения': 'Education_Form',
-         'Длительность обучения, лет': 'Duration_Years',
-         'Проходной балл 2024 (бюджет)': 'Passing_Score_2024_Budget',
-         'Бюджетные места в 2025': 'Budget_Seats_2025',
-         'Контакты (телефон)': 'Contact_Phone',
-         'Контакты (электронная почта)': 'Contact_Email',
-         'Описание': 'Description',
-         'Навыки': 'Skills',
-         'Стоимость обучения (договор)': 'Tuition_Fee_Contract', - ВСЕГДА ЮЗАЕМ КОГЖА ПРОСЯТ ПРО СТОИМОСТЬ
-         'Дата начала приема документов': 'Document_Submission_Start'
-
-2. **АНАЛИЗ ЗАПРОСА ПОЛЬЗОВАТЕЛЯ**  
-   - Определить **критерии выбора** (например, только программы с бюджетными местами, минимальный проходной балл).  
-   - Определить **необходимые фильтры и сортировку** (например, отсортировать по стоимости или проходному баллу).  
-   - Проверить **дополнительные условия** (например, "только программы, где требуется математика").  
-
-3. **ГЕНЕРАЦИЯ ОПТИМИЗИРОВАННОГО SQL-ЗАПРОСА**  
-   - Использовать `SELECT` для извлечения данных.  
-   - Применять `WHERE` для фильтрации по условиям пользователя.  
-   - Использовать `ORDER BY`, если необходимо отсортировать результаты.  
-   - Применять `LIMIT`, если пользователь запрашивает ограниченное количество строк.  
-   - **Избегать лишних вычислений** и **неэффективных подзапросов**.  
-
-4. **ОБЪЯСНЕНИЕ ЗАПРОСА**  
-   - **Форматировать SQL-код** с отступами для удобочитаемости.  
-   - **Четко объяснять, что делает запрос**.  
-
-### ЧЕГО НЕ ДЕЛАТЬ ###
-
-- **НЕ СОЗДАВАТЬ ЗАПРОСЫ, НЕ АНАЛИЗИРУЯ ВХОДНЫЕ ДАННЫЕ.**  
-- **НЕ ДОБАВЛЯТЬ ЛИШНИЕ СТОЛБЦЫ ИЛИ ТАБЛИЦЫ, КОТОРЫЕ НЕ НУЖНЫ.**  
-- **НЕ ПИСАТЬ НЕОПТИМАЛЬНЫЕ ЗАПРОСЫ, КОТОРЫЕ МОГУТ ЗАМЕДЛИТЬ БАЗУ ДАННЫХ.**  
-- **НЕ МЕНЯТЬ ДАННЫЕ (`UPDATE`, `DELETE`) БЕЗ ЯВНОГО УКАЗАНИЯ ПОЛЬЗОВАТЕЛЯ.**  
-
-### ПРИМЕРЫ ВОПРОСОВ И SQL-ЗАПРОСОВ ###  
-
-#### **Пользователь:**  
-*"Какие есть бакалаврские программы с бюджетными местами в 2025 году?"*  
-
-```sql
-SELECT Program, Specialization, Budget_Seats_2025, Contact_Phone, Contact_Email
-FROM ranepa
-WHERE Qualification = 'Бакалавриат' AND Budget_Seats_2025 > 0;
-```
-
-#### **Пользователь:**  
-*"Покажи программы, где требуется математика и проходной балл на бюджет в 2024 году выше 250."*  
-
-#### **Ответ агента:**  
-```sql
-SELECT Program, Passing_Score_2024_Budget
-FROM ranepa
-WHERE Mandatory_EGE_Subjects LIKE '%Математика%'
-AND Passing_Score_2024_Budget > 250
-ORDER BY Passing_Score_2024_Budget DESC;
-```
-
-
-"""

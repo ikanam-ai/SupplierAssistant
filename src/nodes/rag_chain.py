@@ -6,7 +6,7 @@ from langchain_core.runnables import Runnable
 from pydantic import BaseModel, Field
 from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 
-from config import HOST, PORT, PROGRAM_EXTRACTION_CHAIN_NODE_EMBEDDING_MODEL_NAME, E5_COLLECTIONS
+from config import HOST, PORT, EMBEDDING_MODEL_NAME, E5_COLLECTIONS
 
 class RAGInput(TypedDict):
     query: str
@@ -27,7 +27,7 @@ def createRAGChain(
     Создаёт цепочку для поиска релевантных документов в Milvus с использованием E5 эмбеддингов.
     """
     # Инициализация модели для эмбеддингов
-    model_name = PROGRAM_EXTRACTION_CHAIN_NODE_EMBEDDING_MODEL_NAME
+    model_name = EMBEDDING_MODEL_NAME
     hf_embeddings = HuggingFaceEmbeddings(
         model_name=model_name,
         model_kwargs={'device': device}
